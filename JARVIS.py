@@ -3,12 +3,15 @@
 #pip install SpeechRecognition
 #sudo apt-get install python-pyaudio python3-pyaudio
 #pip install --allow-unverified=pyaudio pyaudio
+#sudo apt-get install python-wxtools
+#sudo pip install pyttsx
+#sudo pip install wikipedia
 import wx
 import wikipedia
 import pyttsx
 import pyaudio
 import speech_recognition as sr
-
+from calculator.simple import SimpleCalculator
 
 
 #voices = engine.getProperty('voices')
@@ -16,7 +19,6 @@ import speech_recognition as sr
 #    print "Using voice: ", repr(voice)
 #    engine.setProperty('voice', voices[2].id)
     #engine.say("I'm a little teapot; the big brown fox jumped over the lazy dog")
-
 
 engine = pyttsx.init()
 engine.setProperty('rate', 65)
@@ -47,11 +49,17 @@ class MyFrame(wx.Frame):
         engine.runAndWait()
 
 
-
     def OnEnter(self, event):
         input = self.txt.GetValue()
         input = input.lower()
 
+        for char in input:
+            #need space between each char for it to work: 2 + 2 not 2+2
+            if char == '+' or char == '-' or char == '*' or char == '/':
+                calculator = SimpleCalculator()
+                calculator.run(input)
+                print float(''.join(elem for elem in calculator.log[-1] if elem.isdigit() or elem == '.'))
+                return
         if input == '':
             print "Entered loop"
             r = sr.Recognizer()
@@ -81,4 +89,5 @@ class MyFrame(wx.Frame):
 if __name__ == "__main__":
     app = wx.App(True)
     frame = MyFrame()
-    app.MainLoop()
+app.MainLoop()
+
