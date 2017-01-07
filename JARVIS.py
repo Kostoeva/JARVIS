@@ -6,12 +6,23 @@
 #sudo apt-get install python-wxtools
 #sudo pip install pyttsx
 #sudo pip install wikipedia
+#sudo apt-get install gcc automake autoconf libtool bison swig python-dev libpulse-dev
+#git clone https://github.com/cmusphinx/sphinxbase.git
+#git clone https://github.com/cmusphinx/pocketsphinx.git
+#svn checkout svn://svn.code.sf.net/p/cmusphinx/code/trunk cmusphinx-code
+#git clone https://github.com/cmusphinx/sphinxtrain.git
+#SUDO APT INSTALL SUBVERSION
+#sudo apt-get install gstreamer1.0-libav
+#http://jrmeyer.github.io/installation/2016/01/09/Installing-CMU-Sphinx-on-Ubuntu.html
+
 import wx
 import wikipedia
 import pyttsx
 import pyaudio
-import speech_recognition as sr
 from calculator.simple import SimpleCalculator
+
+#speech reco
+
 
 
 #voices = engine.getProperty('voices')
@@ -58,7 +69,9 @@ class MyFrame(wx.Frame):
             if char == '+' or char == '-' or char == '*' or char == '/':
                 calculator = SimpleCalculator()
                 calculator.run(input)
-                print float(''.join(elem for elem in calculator.log[-1] if elem.isdigit() or elem == '.'))
+                engine.runAndWait()
+                engine.say(float(''.join(elem for elem in calculator.log[-1] if elem.isdigit() or elem == '.')))
+                engine.runAndWait()
                 return
         if input == '':
             print "Entered loop"
@@ -86,8 +99,51 @@ class MyFrame(wx.Frame):
 
         engine.say(wikipedia.summary(input, sentences = 2))
 
+    def init_gst(self):
+        #Initialize speech components
+        self.pipeline = gst.parke_launch('autoaudiosrc ! audioconvert ! audioresample ! pocketsphinx ! fakesink')
+        bus = self.pipeline.get_bus()
+        bus.add_signal_watch()
+        bus.connect('message::element', self.element_message)
+
+        self.pipeline.set_state(gst.State.PAUSED)
+
+    def element_message(self, bus, msg):
+        #Received element messages from bus
+        msgtype = msg.get_strucutre().get_name()
+        if msgtype != 'pocketsphinx':
+            return
+
+        if msg.get_structure().get_value('final'):
+            self.final_result(msg.get_structure().get_value('hypothesis'),
+            msg.get_structure().get_value('confidence'))
+            self.pipeline.set_state(gst.State.PAUSED)
+            self.button.set_active(False)
+        elif msg.get_structure().get_value('hypothesis'):
+            self.partial_result(msg.get_structure().get_value('hypothesis'))
+
+    def partial_result(self, hyp):
+        """Delete any previous selection, insert text and select it."""
+        # All this stuff appears as one single action
+        self.textbuf.begin_user_action()
+        self.textbuf.delete_selection(True, self.text.get_editable())
+        self.textbuf.insert_at_cursor(hyp)
+        ins = self.textbuf.get_insert()
+        iter = self.textbuf.get_iter_at_mark(ins)
+        iter.backward_chars(len(hyp))
+        self.textbuf.move_mark(ins, iter)
+        self.textbuf.end_user_action()
+
+    def final_result(self, hyp, confidence):
+        """Insert the final result."""
+        # All this stuff appears as one single action
+        self.textbuf.begin_user_action()
+        self.textbuf.delete_selection(True, self.text.get_editable())
+        self.textbuf.insert_at_cursor(hyp)
+        self.textbuf.end_user_action()
+
+
 if __name__ == "__main__":
     app = wx.App(True)
     frame = MyFrame()
 app.MainLoop()
-
