@@ -13,6 +13,9 @@
 #git clone https://github.com/cmusphinx/sphinxtrain.git
 #SUDO APT INSTALL SUBVERSION
 #sudo apt-get install gstreamer1.0-libav
+#sudo apt install python3-gi
+#sudo apt install python-gi
+#sudo  apt-get install python-pocketsphinx
 #http://jrmeyer.github.io/installation/2016/01/09/Installing-CMU-Sphinx-on-Ubuntu.html
 
 import wx
@@ -20,6 +23,14 @@ import wikipedia
 import pyttsx
 import pyaudio
 from calculator.simple import SimpleCalculator
+
+import gi
+gi.require_version('Gst', '1.0')
+
+from gi.repository import GObject, Gst
+GObject.threads_init()
+Gst.init(None)
+gst= Gst
 
 #speech reco
 
@@ -74,34 +85,15 @@ class MyFrame(wx.Frame):
                 engine.runAndWait()
                 return
         if input == '':
-            print "Entered loop"
-            r = sr.Recognizer()
-            with sr.Microphone(device_index=2) as source:
-                print "Entered mic"
-                audio = r.listen(source)
-            try:
-                print "Entered try"
-                self.txt.SetValue(r.recognize_google(audio))
-                input = self.txt.GetValue()
-            except sr.UnknownValueError:
-                print"Google Speech Recognition could not understand audio"
-            except sr.RequestError as e:
-                print"Could not request results from Google Speech Recognition service; {0}".format(e)
-        #input = input.split(' ')
-        #input = " ".join(input[2:])
-        #Continually asks a question for wiki searches
-        #while True:
-        #    input = raw_input("Q: ")
-            #change languages for wiki article queries: wikipedia.set_lang("ru")
+            self.init_gst()
     ###Add a tell me more - then more sentences - reads entire summary
-
         engine.runAndWait()
 
         engine.say(wikipedia.summary(input, sentences = 2))
 
     def init_gst(self):
         #Initialize speech components
-        self.pipeline = gst.parke_launch('autoaudiosrc ! audioconvert ! audioresample ! pocketsphinx ! fakesink')
+        self.pipeline = gst.parse_launch('autoaudiosrc ! audioconvert ! audioresample ! pocketsphinx ! fakesink')
         bus = self.pipeline.get_bus()
         bus.add_signal_watch()
         bus.connect('message::element', self.element_message)
