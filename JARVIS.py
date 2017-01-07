@@ -19,6 +19,9 @@
 #sudo apt-get install python-pocketsphinx
 #http://jrmeyer.github.io/installation/2016/01/09/Installing-CMU-Sphinx-on-Ubuntu.html
 
+
+#DO  sudo pip install --upgrade pocketsphinx
+
 import wx
 import wikipedia
 import pyttsx
