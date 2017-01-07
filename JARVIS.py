@@ -16,6 +16,7 @@
 #sudo apt install python3-gi
 #sudo apt install python-gi
 #sudo  apt-get install python-pocketsphinx
+#sudo apt-get install python-pocketsphinx
 #http://jrmeyer.github.io/installation/2016/01/09/Installing-CMU-Sphinx-on-Ubuntu.html
 
 import wx
