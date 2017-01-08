@@ -1,4 +1,5 @@
 #brew install wxpython
+#sudo pip install simplecalculator
 #sudo apt install linuxbrew-wrapper
 #pip install SpeechRecognition
 #sudo apt-get install python-pyaudio python3-pyaudio
@@ -15,10 +16,9 @@
 #sudo apt-get install gstreamer1.0-libav
 #sudo apt install python3-gi
 #sudo apt install python-gi
-#sudo  apt-get install python-pocketsphinx
 #sudo apt-get install python-pocketsphinx
 #http://jrmeyer.github.io/installation/2016/01/09/Installing-CMU-Sphinx-on-Ubuntu.html
-
+#IF MEMORYERROR = run as sudo pip --no-chache-dir install SpeechRecognition
 
 #DO  sudo pip install --upgrade pocketsphinx
 
