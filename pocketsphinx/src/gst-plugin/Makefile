@@ -89,7 +89,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = x86_64-pc-linux-gnu
 host_triplet = x86_64-pc-linux-gnu
-#am__append_1 = libgstpocketsphinx.la
+am__append_1 = libgstpocketsphinx.la
 subdir = src/gst-plugin
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_pkg_swig.m4 \
@@ -148,7 +148,7 @@ libgstpocketsphinx_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(libgstpocketsphinx_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
-#am_libgstpocketsphinx_la_rpath = -rpath $(plugindir)
+am_libgstpocketsphinx_la_rpath = -rpath $(plugindir)
 AM_V_P = $(am__v_P_$(V))
 am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
 am__v_P_0 = false
@@ -238,12 +238,12 @@ EGREP = /bin/grep -E
 EXEEXT = 
 FGREP = /bin/grep -F
 GREP = /bin/grep
-GST_CFLAGS =  
-GST_LIBS = 
+GST_CFLAGS = -pthread -I/usr/include/gstreamer-1.0 -I/usr/lib/x86_64-linux-gnu/gstreamer-1.0/include -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include 
+GST_LIBS = -lgstbase-1.0 -lgstreamer-1.0 -lgobject-2.0 -lglib-2.0
 GST_MAJORMINOR = 1.0
 GST_PLUGIN_LDFLAGS = -module -avoid-version -export-symbols-regex _*\(gst_\|Gst\|GST_\).*
-GStreamer_CFLAGS = 
-GStreamer_LIBS = 
+GStreamer_CFLAGS = -pthread -I/usr/include/gstreamer-1.0 -I/usr/lib/x86_64-linux-gnu/gstreamer-1.0/include -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include
+GStreamer_LIBS = -lgstbase-1.0 -lgstreamer-1.0 -lgobject-2.0 -lglib-2.0
 HAVE_DOXYGEN = no
 HAVE_PKGCONFIG = yes
 INSTALL = /usr/bin/install -c

@@ -21,6 +21,7 @@
 #IF MEMORYERROR = run as sudo pip --no-chache-dir install SpeechRecognition
 
 #DO  sudo pip install --upgrade pocketsphinx
+#sudo apt-get install flex
 
 import wx
 import wikipedia
@@ -28,13 +29,17 @@ import pyttsx
 import pyaudio
 from calculator.simple import SimpleCalculator
 
+import os, sys
+from pocketsphinx import LiveSpeech, get_model_path
+
 import gi
 gi.require_version('Gst', '1.0')
-
 from gi.repository import GObject, Gst
 GObject.threads_init()
 Gst.init(None)
-gst= Gst
+gst = Gst
+
+
 
 #speech reco
 
@@ -67,6 +72,7 @@ class MyFrame(wx.Frame):
         my_sizer.Add(lbl, 0, wx.ALL, 5)
         self.txt = wx.TextCtrl(panel, style=wx.TE_PROCESS_ENTER, size=(400,30))
         self.txt.SetFocus()
+
         self.txt.Bind(wx.EVT_TEXT_ENTER, self.OnEnter)
         my_sizer.Add(self.txt, 0, wx.ALL, 5)
         panel.SetSizer(my_sizer)
@@ -89,36 +95,29 @@ class MyFrame(wx.Frame):
                 engine.runAndWait()
                 return
         if input == '':
-            self.init_gst()
-    ###Add a tell me more - then more sentences - reads entire summary
-        engine.runAndWait()
 
-        engine.say(wikipedia.summary(input, sentences = 2))
+            self.pipeline = gst.parse_launch('autoaudiosrc ! audioconvert ! audioresample ! pocketsphinx name=asr ! fakesink')
 
-    def init_gst(self):
-        #Initialize speech components
-        self.pipeline = gst.parse_launch('autoaudiosrc ! audioconvert ! audioresample ! pocketsphinx ! fakesink')
-        bus = self.pipeline.get_bus()
-        bus.add_signal_watch()
-        bus.connect('message::element', self.element_message)
+            self.pipeline.set_state(gst.State.PLAYING)
 
-        self.pipeline.set_state(gst.State.PAUSED)
+            bus = self.pipeline.get_bus()
+            bus.add_signal_watch()
+            bus.connect('message::element', self.element_message)
+
 
     def element_message(self, bus, msg):
-        #Received element messages from bus
-        msgtype = msg.get_strucutre().get_name()
+        """Receive element messages from the bus."""
+        msgtype = msg.get_structure().get_name()
         if msgtype != 'pocketsphinx':
             return
-
         if msg.get_structure().get_value('final'):
-            self.final_result(msg.get_structure().get_value('hypothesis'),
-            msg.get_structure().get_value('confidence'))
+            self.final_result(msg.get_structure().get_value('hypothesis'), msg.get_structure().get_value('confidence'))
             self.pipeline.set_state(gst.State.PAUSED)
             self.button.set_active(False)
         elif msg.get_structure().get_value('hypothesis'):
             self.partial_result(msg.get_structure().get_value('hypothesis'))
 
-    def partial_result(self, hyp):
+    def partial_result(self, hyp, uttid):
         """Delete any previous selection, insert text and select it."""
         # All this stuff appears as one single action
         self.textbuf.begin_user_action()
@@ -130,13 +129,27 @@ class MyFrame(wx.Frame):
         self.textbuf.move_mark(ins, iter)
         self.textbuf.end_user_action()
 
-    def final_result(self, hyp, confidence):
+    def final_result(self, hyp, uttid):
         """Insert the final result."""
         # All this stuff appears as one single action
         self.textbuf.begin_user_action()
         self.textbuf.delete_selection(True, self.text.get_editable())
         self.textbuf.insert_at_cursor(hyp)
         self.textbuf.end_user_action()
+
+
+
+
+#            speech = LiveSpeech(lm = False, keyphrase = 'forward', kws_threshold=20)
+#            for phrase in speech:
+#                if phrase.segments(detailed=True):
+#                    print YO
+    ###Add a tell me more - then more sentences - reads entire summary
+#        engine.runAndWait()
+
+#        engine.say(wikipedia.summary(input, sentences = 2))
+
+
 
 
 if __name__ == "__main__":
